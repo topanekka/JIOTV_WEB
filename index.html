@@ -1,51 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JioTV Web</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JioTV Playlist</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/dashjs/dist/dash.all.min.js"></script>
-  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <img src="jtv.png" alt="JioTV Logo">
-    <div class="button-group">
-      <button id="login">Login</button>
-      <button id="refresh">Refresh</button>
+  <header class="main-header">
+    <div class="logo">JioTV+</div>
+    <div class="search-filter">
+      <input type="text" id="search" placeholder="Search channels...">
+      <select id="categoryFilter"><option value="">Category</option></select>
+      <select id="genreFilter"><option value="">Genre</option></select>
+      <select id="languageFilter"><option value="">Language</option></select>
+      <button id="refresh"><i class="fas fa-sync"></i> Refresh</button>
     </div>
-  </header>
-
-  <div id="search-container">
-    <input type="text" id="search" placeholder="Search ...">
-  </div>
-
-  <div id="filters">
-    <select id="categoryFilter">
-      <option value="">-- CATEGORY --</option>
-    </select>
-    <select id="genreFilter">
-      <option value="">-- GENRE --</option>
-    </select>
-    <select id="languageFilter">
-      <option value="">-- LANGUAGE --</option>
-    </select>
-  </div>
-
-  <div class="grid" id="channelGrid"></div>
-
-  <div class="player-wrapper" id="playerWrapper">
-    <video id="videoPlayer" controls autoplay></video>
-    <div class="player-controls">
-      <i class="fa fa-play" id="playPause"></i>
-      <input type="range" id="progressBar" min="0" max="100" value="0">
-      <i class="fa fa-volume-up" id="volume"></i>
-      <i class="fa fa-expand" id="fullscreen"></i>
+  </header>  <main class="channel-container">
+    <div class="channel-grid" id="channelGrid"></div>
+  </main>  <div class="player-popup" id="playerWrapper">
+    <div class="player-box">
+      <button class="close-player" onclick="closePlayer()">&times;</button>
+      <video id="videoPlayer" controls autoplay></video>
     </div>
-  </div>
-
-  <script src="script.js"></script>
-</body>
+  </div>  <script src="script.js"></script></body>
 </html>
