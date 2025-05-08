@@ -90,9 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     wrapper.classList.add("show");
 
-    if (newPlayer.requestFullscreen) {
-      newPlayer.requestFullscreen().catch(() => {});
-    }
+    
   }
 
   window.closePlayer = () => {
