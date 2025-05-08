@@ -2,50 +2,97 @@ document.addEventListener("DOMContentLoaded", () => {
   let channels = [];
 
   async function fetchChannels() {
-    const response = await fetch('channels.json');
-    channels = await response.json();
-    renderFilters();
-    renderChannels();
+    try {
+      const res = await fetch("channels.json");
+      channels = await res.json();
+      renderFilters();
+      renderChannels(channels);
+    } catch (e) {
+      alert("Failed to load channels.");
+    }
   }
 
   function renderFilters() {
-    const genres = [...new Set(channels.map(ch => ch.genre))];
-    const categories = [...new Set(channels.map(ch => ch.category))];
-    const languages = [...new Set(channels.map(ch => ch.language))];
+    const categories = [...new Set(channels.map(ch => ch.category).filter(Boolean))];
+    const genres = [...new Set(channels.map(ch => ch.genre).filter(Boolean))];
+    const languages = [...new Set(channels.map(ch => ch.language).filter(Boolean))];
 
-    document.getElementById('genreFilter').innerHTML = genres.map(genre => `<option value="${genre}">${genre}</option>`).join('');
-    document.getElementById('categoryFilter').innerHTML = categories.map(category => `<option value="${category}">${category}</option>`).join('');
-    document.getElementById('languageFilter').innerHTML = languages.map(language => `<option value="${language}">${language}</option>`).join('');
+    addOptions("categoryFilter", categories);
+    addOptions("genreFilter", genres);
+    addOptions("languageFilter", languages);
   }
 
-  function renderChannels() {
-    const grid = document.getElementById('channelGrid');
-    grid.innerHTML = '';
-    channels.forEach(channel => {
-      const card = document.createElement('div');
-      card.className = 'card';
+  function addOptions(selectId, options) {
+    const select = document.getElementById(selectId);
+    options.forEach(opt => {
+      const o = document.createElement("option");
+      o.value = opt;
+      o.innerText = opt;
+      select.appendChild(o);
+    });
+  }
+
+  function renderChannels(list) {
+    const grid = document.getElementById("channelGrid");
+    grid.innerHTML = "";
+    list.forEach(ch => {
+      const card = document.createElement("div");
+      card.className = "card";
       card.innerHTML = `
-        <img src="${channel.logo}" alt="${channel.name}">
-        <h3>${channel.name}</h3>
-        <span>${channel.category}</span>
+        <img src="${ch.logo || 'https://via.placeholder.com/160x90?text=No+Logo'}" alt="${ch.name}">
+        <h3>${ch.name}</h3>
       `;
-      card.addEventListener('click', () => playChannel(channel.url));
+      card.onclick = () => playChannel(ch.url);
       grid.appendChild(card);
     });
   }
 
   function playChannel(url) {
-    const player = document.getElementById('videoPlayer');
-    const wrapper = document.getElementById('playerWrapper');
-    if (url.endsWith('.mpd')) {
-      const dashPlayer = dashjs.MediaPlayer().create();
-      dashPlayer.initialize(player, url, true);
+    const wrapper = document.getElementById("playerWrapper");
+    const oldPlayer = document.getElementById("videoPlayer");
+    const newPlayer = oldPlayer.cloneNode(true);
+    oldPlayer.parentNode.replaceChild(newPlayer, oldPlayer);
+
+    if (url.endsWith(".mpd")) {
+      const dash = dashjs.MediaPlayer().create();
+      dash.initialize(newPlayer, url, true);
     } else {
-      player.src = url;
-      player.load();
+      newPlayer.src = url;
+      newPlayer.load();
     }
-    wrapper.classList.add('show');
+    wrapper.classList.add("show");
   }
+
+  function closePlayer() {
+    document.getElementById("playerWrapper").classList.remove("show");
+    const player = document.getElementById("videoPlayer");
+    player.pause();
+    player.src = "";
+  }
+
+  function applyFilters() {
+    const search = document.getElementById("search").value.toLowerCase();
+    const cat = document.getElementById("categoryFilter").value;
+    const gen = document.getElementById("genreFilter").value;
+    const lang = document.getElementById("languageFilter").value;
+
+    const filtered = channels.filter(ch =>
+      (!cat || ch.category === cat) &&
+      (!gen || ch.genre === gen) &&
+      (!lang || ch.language === lang) &&
+      ch.name.toLowerCase().includes(search)
+    );
+
+    renderChannels(filtered);
+  }
+
+  document.getElementById("search").addEventListener("input", applyFilters);
+  document.getElementById("categoryFilter").addEventListener("change", applyFilters);
+  document.getElementById("genreFilter").addEventListener("change", applyFilters);
+  document.getElementById("languageFilter").addEventListener("change", applyFilters);
+  document.getElementById("refresh").addEventListener("click", fetchChannels);
+
+  window.closePlayer = closePlayer;
 
   fetchChannels();
 });
