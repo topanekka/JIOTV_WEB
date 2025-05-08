@@ -2,79 +2,119 @@ document.addEventListener("DOMContentLoaded", () => {
   let channels = [];
 
   async function fetchChannels() {
-    const response = await fetch('channels.json');
-    channels = await response.json();
-    renderFilters();
-    renderChannels();
+    try {
+      const res = await fetch("channels.json");
+      channels = await res.json();
+      renderFilters();
+      renderChannels(channels);
+    } catch (err) {
+      console.error("Error loading channels:", err);
+    }
   }
 
   function renderFilters() {
-    const genres = [...new Set(channels.map(ch => ch.genre))];
-    const categories = [...new Set(channels.map(ch => ch.category))];
-    const languages = [...new Set(channels.map(ch => ch.language))];
+    const catSet = new Set();
+    const langSet = new Set();
+    const genreSet = new Set();
 
-    document.getElementById('genreFilter').innerHTML = genres.map(genre => `<option value="${genre}">${genre}</option>`).join('');
-    document.getElementById('categoryFilter').innerHTML = categories.map(category => `<option value="${category}">${category}</option>`).join('');
-    document.getElementById('languageFilter').innerHTML = languages.map(language => `<option value="${language}">${language}</option>`).join('');
+    channels.forEach(ch => {
+      if (ch.category) catSet.add(ch.category);
+      if (ch.language) langSet.add(ch.language);
+      if (ch.genre) genreSet.add(ch.genre);
+    });
+
+    fillSelect("categoryFilter", catSet);
+    fillSelect("languageFilter", langSet);
+    fillSelect("genreFilter", genreSet);
   }
 
-  function renderChannels() {
-    const grid = document.getElementById('channelGrid');
-    grid.innerHTML = '';
-    channels.forEach(channel => {
-      const card = document.createElement('div');
-      card.className = 'card';
+  function fillSelect(id, values) {
+    const sel = document.getElementById(id);
+    values.forEach(val => {
+      const opt = document.createElement("option");
+      opt.value = val;
+      opt.textContent = val;
+      sel.appendChild(opt);
+    });
+  }
+
+  function renderChannels(list) {
+    const grid = document.getElementById("channelGrid");
+    grid.innerHTML = "";
+    list.forEach(channel => {
+      const card = document.createElement("div");
+      card.className = "card";
       card.innerHTML = `
-        <img src="${channel.logo}" alt="${channel.name}">
+        <img src="${channel.logo || 'https://dummyimage.com/300x100/000/fff&text=No+Logo'}" alt="${channel.name}">
         <h3>${channel.name}</h3>
-        <span>${channel.category}</span>
+        <span>${channel.category || 'Uncategorized'}</span>
       `;
-      card.addEventListener('click', () => playChannel(channel.url));
+      card.onclick = () => playChannel(channel.url);
       grid.appendChild(card);
     });
   }
 
-function playChannel(url) {
-  const wrapper = document.getElementById("playerWrapper");
+  function applyFilters() {
+    const q = document.getElementById("search").value.toLowerCase();
+    const cat = document.getElementById("categoryFilter").value;
+    const lang = document.getElementById("languageFilter").value;
+    const genre = document.getElementById("genreFilter").value;
 
-  // Replace old video element
-  const oldPlayer = document.getElementById("videoPlayer");
-  const newPlayer = oldPlayer.cloneNode(true);
-  oldPlayer.parentNode.replaceChild(newPlayer, oldPlayer);
+    const filtered = channels.filter(ch =>
+      (!q || ch.name.toLowerCase().includes(q)) &&
+      (!cat || ch.category === cat) &&
+      (!lang || ch.language === lang) &&
+      (!genre || ch.genre === genre)
+    );
 
-  // Clear previous errors or sources
-  newPlayer.src = "";
-  newPlayer.load();
+    renderChannels(filtered);
+  }
 
-  // Determine stream type
-  const isMPD = url.includes(".mpd");
-  const isHLS = url.includes(".m3u8") || url.includes("ch=") || url.includes("id=");
+  function playChannel(url) {
+    const wrapper = document.getElementById("playerWrapper");
 
-  // DASH (.mpd) stream
-  if (isMPD) {
-    try {
+    const oldPlayer = document.getElementById("videoPlayer");
+    const newPlayer = oldPlayer.cloneNode(true);
+    oldPlayer.parentNode.replaceChild(newPlayer, oldPlayer);
+
+    newPlayer.src = "";
+    newPlayer.load();
+
+    if (url.includes(".mpd")) {
       const dash = dashjs.MediaPlayer().create();
       dash.initialize(newPlayer, url, true);
-    } catch (e) {
-      alert("DASH stream failed to load.");
-      console.error("DASH error:", e);
+    } else {
+      newPlayer.src = url;
+      newPlayer.load();
+    }
+
+    wrapper.classList.add("show");
+
+    if (newPlayer.requestFullscreen) {
+      newPlayer.requestFullscreen().catch(() => {});
     }
   }
 
-  // HLS or fallback
-  else if (isHLS || url.startsWith("http")) {
-    newPlayer.src = url;
-    newPlayer.load();
-  }
+  window.closePlayer = () => {
+    const wrapper = document.getElementById("playerWrapper");
+    const player = document.getElementById("videoPlayer");
+    wrapper.classList.remove("show");
+    player.pause();
+    player.src = "";
+  };
 
-  // Show player popup
-  wrapper.classList.add("show");
-
-  // Optional: auto fullscreen
-  if (newPlayer.requestFullscreen) {
-    newPlayer.requestFullscreen().catch(() => {});
-  }
-}
+  // Event Listeners
+  document.getElementById("search").addEventListener("input", applyFilters);
+  document.getElementById("categoryFilter").addEventListener("change", applyFilters);
+  document.getElementById("languageFilter").addEventListener("change", applyFilters);
+  document.getElementById("genreFilter").addEventListener("change", applyFilters);
+  document.getElementById("refresh").addEventListener("click", () => {
+    fetchChannels();
+    document.getElementById("search").value = "";
+    ["categoryFilter", "languageFilter", "genreFilter"].forEach(id => {
+      document.getElementById(id).value = "";
+    });
+  });
 
   fetchChannels();
 });
