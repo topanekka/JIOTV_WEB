@@ -44,14 +44,20 @@ document.addEventListener("DOMContentLoaded", () => {
     list.forEach(channel => {
       const card = document.createElement("div");
       card.className = "card";
+      const logoUrl = getLogoUrl(channel.name);
       card.innerHTML = `
-        <img src="${channel.logo || 'https://dummyimage.com/300x100/000/fff&text=No+Logo'}" alt="${channel.name}">
+        <img src="${logoUrl}" alt="${channel.name}">
         <h3>${channel.name}</h3>
         <span>${channel.category || 'Uncategorized'}</span>
       `;
       card.onclick = () => playChannel(channel.url);
       grid.appendChild(card);
     });
+  }
+
+  function getLogoUrl(channelName) {
+    const formattedName = channelName.replace(/\s+/g, '_').toLowerCase();
+    return `https://raw.githubusercontent.com/amjiddader/tv_logo/master/${formattedName}.png`;
   }
 
   function applyFilters() {
@@ -61,58 +67,4 @@ document.addEventListener("DOMContentLoaded", () => {
     const genre = document.getElementById("genreFilter").value;
 
     const filtered = channels.filter(ch =>
-      (!q || ch.name.toLowerCase().includes(q)) &&
-      (!cat || ch.category === cat) &&
-      (!lang || ch.language === lang) &&
-      (!genre || ch.genre === genre)
-    );
-
-    renderChannels(filtered);
-  }
-
-  function playChannel(url) {
-    const wrapper = document.getElementById("playerWrapper");
-
-    const oldPlayer = document.getElementById("videoPlayer");
-    const newPlayer = oldPlayer.cloneNode(true);
-    oldPlayer.parentNode.replaceChild(newPlayer, oldPlayer);
-
-    newPlayer.src = "";
-    newPlayer.load();
-
-    if (url.includes(".mpd")) {
-      const dash = dashjs.MediaPlayer().create();
-      dash.initialize(newPlayer, url, true);
-    } else {
-      newPlayer.src = url;
-      newPlayer.load();
-    }
-
-    wrapper.classList.add("show");
-
-    
-  }
-
-  window.closePlayer = () => {
-    const wrapper = document.getElementById("playerWrapper");
-    const player = document.getElementById("videoPlayer");
-    wrapper.classList.remove("show");
-    player.pause();
-    player.src = "";
-  };
-
-  // Event Listeners
-  document.getElementById("search").addEventListener("input", applyFilters);
-  document.getElementById("categoryFilter").addEventListener("change", applyFilters);
-  document.getElementById("languageFilter").addEventListener("change", applyFilters);
-  document.getElementById("genreFilter").addEventListener("change", applyFilters);
-  document.getElementById("refresh").addEventListener("click", () => {
-    fetchChannels();
-    document.getElementById("search").value = "";
-    ["categoryFilter", "languageFilter", "genreFilter"].forEach(id => {
-      document.getElementById(id).value = "";
-    });
-  });
-
-  fetchChannels();
-});
+      (!q ||60
