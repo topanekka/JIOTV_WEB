@@ -67,4 +67,62 @@ document.addEventListener("DOMContentLoaded", () => {
     const genre = document.getElementById("genreFilter").value;
 
     const filtered = channels.filter(ch =>
-      (!q ||60
+      (!q || ch.name.toLowerCase().includes(q)) &&
+      (!cat || ch.category === cat) &&
+      (!lang || ch.language === lang) &&
+      (!genre || ch.genre === genre)
+    );
+
+    renderChannels(filtered);
+  }
+
+  function playChannel(url) {
+    const wrapper = document.getElementById("playerWrapper");
+
+    const oldPlayer = document.getElementById("videoPlayer");
+    const newPlayer = oldPlayer.cloneNode(true);
+    oldPlayer.parentNode.replaceChild(newPlayer, oldPlayer);
+
+    newPlayer.src = "";
+    newPlayer.load();
+
+    // Support for different streaming formats
+    if (url.includes(".mpd")) {
+      const dash = dashjs.MediaPlayer().create();
+      dash.initialize(newPlayer, url, true);
+    } else if (url.includes(".m3u8")) {
+      newPlayer.src = url;
+      newPlayer.load();
+    } else if (url.includes(".ts")) {
+      newPlayer.src = url;
+      newPlayer.load();
+    } else {
+      console.error("Unsupported stream format");
+    }
+
+    wrapper.classList.add("show");
+  }
+
+  window.closePlayer = () => {
+    const wrapper = document.getElementById("playerWrapper");
+    const player = document.getElementById("videoPlayer");
+    wrapper.classList.remove("show");
+    player.pause();
+    player.src = "";
+  };
+
+  // Event Listeners
+  document.getElementById("search").addEventListener("input", applyFilters);
+  document.getElementById("categoryFilter").addEventListener("change", applyFilters);
+  document.getElementById("languageFilter").addEventListener("change", applyFilters);
+  document.getElementById("genreFilter").addEventListener("change", applyFilters);
+  document.getElementById("refresh").addEventListener("click", () => {
+    fetchChannels();
+    document.getElementById("search").value = "";
+    ["categoryFilter", "languageFilter", "genreFilter"].forEach(id => {
+      document.getElementById(id).value = "";
+    });
+  });
+
+  fetchChannels();
+});
