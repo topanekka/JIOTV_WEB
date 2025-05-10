@@ -76,32 +76,42 @@ document.addEventListener("DOMContentLoaded", () => {
     renderChannels(filtered);
   }
 
-  function playChannel(url) {
-    const wrapper = document.getElementById("playerWrapper");
+function playChannel(url) {
+  const wrapper = document.getElementById("playerWrapper");
 
-    const oldPlayer = document.getElementById("videoPlayer");
-    const newPlayer = oldPlayer.cloneNode(true);
-    oldPlayer.parentNode.replaceChild(newPlayer, oldPlayer);
+  const oldPlayer = document.getElementById("videoPlayer");
+  const newPlayer = oldPlayer.cloneNode(true);
+  oldPlayer.parentNode.replaceChild(newPlayer, oldPlayer);
 
-    newPlayer.src = "";
+  newPlayer.src = "";
+  newPlayer.load();
+
+  if (url.includes(".mpd")) {
+    const dash = dashjs.MediaPlayer().create();
+    dash.initialize(newPlayer, url, true);
+  } else if (url.includes(".m3u8")) {
+    newPlayer.src = url;
+    newPlayer.type = "application/x-mpegURL"; // This is important for m3u8 streams
     newPlayer.load();
-
-    // Support for different streaming formats
-    if (url.includes(".mpd")) {
-      const dash = dashjs.MediaPlayer().create();
-      dash.initialize(newPlayer, url, true);
-    } else if (url.includes(".m3u8")) {
-      newPlayer.src = url;
-      newPlayer.load();
-    } else if (url.includes(".ts")) {
-      newPlayer.src = url;
-      newPlayer.load();
-    } else {
-      console.error("Unsupported stream format");
-    }
-
-    wrapper.classList.add("show");
+  } else if (url.includes("php?id=") || url.includes("m3u8?id=")) {
+    // Handle php?id= and m3u8?id= streams by redirecting or fetching the actual stream URL
+    fetch(url)
+      .then(res => res.text())
+      .then(resText => {
+        // Assuming the response text contains a valid stream URL
+        const streamUrl = resText.trim();  // Make sure to extract the URL properly from the response
+        newPlayer.src = streamUrl;
+        newPlayer.load();
+      })
+      .catch(err => console.error("Error fetching stream URL:", err));
+  } else {
+    // If it's a direct URL or other format
+    newPlayer.src = url;
+    newPlayer.load();
   }
+
+  wrapper.classList.add("show");
+}
 
   window.closePlayer = () => {
     const wrapper = document.getElementById("playerWrapper");
