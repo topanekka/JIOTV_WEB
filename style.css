@@ -1,4 +1,3 @@
-/* Root Variables */
 :root {
   --primary-color: #00ffe1;
   --secondary-color: #1a1a40;
@@ -113,7 +112,6 @@ header button:hover {
   border-radius: 10px;
 }
 
-/* Player Popup Styles */
 .player-wrapper {
   display: none;
   position: fixed;
@@ -121,16 +119,15 @@ header button:hover {
   left: 0;
   width: 100%;
   height: 100%;
-  background: #000;
+  background: rgba(0, 0, 0, 0.9);
   z-index: 999;
   color: #fff;
+  justify-content: center;
+  align-items: center;
 }
 
 .player-wrapper.show {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
 }
 
 .player-box {
@@ -158,58 +155,6 @@ header button:hover {
   cursor: pointer;
 }
 
-/* Telegram Popup Styles */
-.telegram-popup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  background: rgba(0,0,0,0.9);
-  width: 100%;
-  height: 100%;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.telegram-content {
-  background: #1a1a40;
-  color: white;
-  padding: 30px;
-  border-radius: 15px;
-  text-align: center;
-  max-width: 90%;
-  box-shadow: 0 0 15px rgba(0, 255, 225, 0.3);
-}
-
-.telegram-content h2 {
-  margin-bottom: 10px;
-  font-size: 24px;
-}
-
-.popup-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.popup-buttons button {
-  padding: 10px 20px;
-  border: none;
-  font-weight: bold;
-  border-radius: 8px;
-  cursor: pointer;
-  background: var(--primary-color);
-  color: black;
-  transition: 0.2s;
-}
-
-.popup-buttons button:hover {
-  background: var(--button-hover-bg);
-}
-
-/* Responsive */
 @media (max-width: 768px) {
   #filters {
     flex-direction: column;
@@ -227,4 +172,4 @@ header button:hover {
   .player-box {
     width: 95%;
   }
-  }
+}
