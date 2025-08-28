@@ -543,65 +543,7 @@
 }
 </style>
 
-<script>
-function showAdblockPopup() {
-    document.getElementById('adb').style.display = 'flex';
-}
 
-async function detectAdblock() {
-    return new Promise(resolve => {
-        let detected = false;
-
-        // Create bait elements
-        const bait = document.createElement('div');
-        bait.innerHTML = '&nbsp;';
-        bait.className = 'adsbox ad adsense banner-ad';
-        bait.style.cssText = 'width:1px;height:1px;position:absolute;left:-9999px;top:-9999px;visibility:visible;';
-        document.body.appendChild(bait);
-
-        const img = document.createElement('img');
-        img.src = 'https://pagead2.googlesyndication.com/pagead/imgad?id=CAASFeDxyz';
-        img.style.cssText = 'width:1px;height:1px;position:absolute;left:-9999px;top:-9999px;';
-        img.onerror = () => { detected = true; };
-        document.body.appendChild(img);
-
-        const iframe = document.createElement('iframe');
-        iframe.src = 'https://googleads.g.doubleclick.net/pagead/html/r2023/sample-ad.html';
-        iframe.style.cssText = 'width:1px;height:1px;position:absolute;left:-9999px;top:-9999px;';
-        iframe.onerror = () => { detected = true; };
-        document.body.appendChild(iframe);
-
-        // Wait 300ms to give adblockers time
-        setTimeout(() => {
-            const baitStyles = window.getComputedStyle(bait);
-            if (
-                detected ||
-                baitStyles.display === 'none' ||
-                baitStyles.visibility === 'hidden' ||
-                bait.offsetHeight === 0 ||
-                bait.offsetParent === null
-            ) {
-                detected = true;
-            }
-
-            // Cleanup
-            bait.remove();
-            img.remove();
-            iframe.remove();
-
-            resolve(detected);
-        }, 300);
-    });
-}
-
-window.addEventListener('DOMContentLoaded', async () => {
-    const isBlocked = await detectAdblock();
-    if (isBlocked) {
-        showAdblockPopup();
-    }
-});
-</script>
   
 </body>
-    <script type='text/javascript' src='//eltontry.com/63/88/ac/6388ace5c2a702a7b58f724683244363.js'></script>
 </html>
